@@ -21,7 +21,6 @@ const Product = db.sequelize.define("products", {
   },
   image: {
     type: db.Sequelize.STRING,
-    allowNull: false,
   },
   createdAt: {
     type: db.Sequelize.DATE,

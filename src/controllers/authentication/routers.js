@@ -8,6 +8,7 @@ import * as AuthControllers from "./index.js";
 const router = Router();
 
 //@Authentication
+router.post("/register", AuthControllers.register);
 router.post("/login", AuthControllers.login);
 router.get("/verify", AuthControllers.verifyAccount);
 router.patch("/change-default-password", AuthControllers.changeDefaultPassword);

@@ -13,15 +13,12 @@ const OrderItem = db.sequelize.define("orderItems", {
     },
     productId: {
         type: db.Sequelize.INTEGER,
-        allowNull: false,
     },
     quantity: {
         type: db.Sequelize.INTEGER,
-        allowNull: false,
     },
     price: {
         type: db.Sequelize.INTEGER,
-        allowNull: false,
     },
     createdAt: {
         type: db.Sequelize.DATE,

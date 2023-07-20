@@ -26,9 +26,11 @@ app.get("/", (req, res) => {
 // @use router
 import AuthRouters from "./src/controllers/authentication/routers.js";
 import CashierManagement from "./src/controllers/cashierManagement/routers.js";
+import Product from "./src/controllers/products/routers.js";
 
 app.use("/api/v1/auth", AuthRouters);
 app.use("/api/v1/", CashierManagement);
+app.use("/api/v1", Product);
 
 //@global errorHandler
 app.use(middleware.errorHandler);

@@ -63,6 +63,60 @@ export const changeDefaultPassword = async (req, res, next) => {
   }
 };
 
+export const register = async (req, res, next) => {
+  const transaction = await db.sequelize.transaction();
+  try {
+    //@get body from request
+    const { fullName, username, email, password, phone } = req.body;
+    await Validation.RegisterValidationSchema.validate(req.body);
+
+    //@check if user exists
+    const userExists = await User?.findOne({
+      where: { username: username, email: email },
+    });
+    if (userExists) throw { status: 400, message: error.USER_ALREADY_EXISTS };
+
+    //@has new password
+    const encryptedPassword = helpers.hashPassword(password);
+
+    //@create new user
+    const newUser = await User?.create({
+      fullName,
+      username,
+      email,
+      password: encryptedPassword,
+      phone,
+    });
+
+    //@generate access token
+    const accessToken = helpers.createToken({
+      id: newUser?.dataValues?.id,
+      role: newUser?.dataValues?.role,
+    });
+
+    const userDto = {
+      fullName: newUser?.dataValues?.fullName,
+      username: newUser?.dataValues?.username,
+      email: newUser?.dataValues?.email,
+      phone: newUser?.dataValues?.phone,
+      role: newUser?.dataValues?.role,
+      status: newUser?.dataValues?.status,
+    };
+
+    res.header("Authorization", `Bearer ${accessToken}`).status(201).json({
+      message: "User created successfully",
+      data: userDto,
+    });
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    if (error instanceof ValidationError) {
+      return next({ status: 400, message: error?.errors?.[0] });
+    }
+    next(error);
+  }
+};
+
 //@login controller
 export const login = async (req, res, next) => {
   try {
