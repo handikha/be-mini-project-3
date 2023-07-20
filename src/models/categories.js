@@ -1,6 +1,6 @@
 import db from "./index.js";
 
-const Product = db.sequelize.define("products", {
+const Category = db.sequelize.define("categories", {
   id: {
     type: db.Sequelize.INTEGER,
     primaryKey: true,
@@ -8,18 +8,6 @@ const Product = db.sequelize.define("products", {
     allowNull: false,
   },
   name: {
-    type: db.Sequelize.STRING,
-    allowNull: false,
-  },
-  price: {
-    type: db.Sequelize.INTEGER,
-    allowNull: false,
-  },
-  description: {
-    type: db.Sequelize.STRING,
-    allowNull: false,
-  },
-  image: {
     type: db.Sequelize.STRING,
     allowNull: false,
   },
@@ -32,10 +20,6 @@ const Product = db.sequelize.define("products", {
     type: db.Sequelize.DATE,
     defaultValue: db.Sequelize.NOW,
   },
-  categoryId: {
-    type: db.Sequelize.INTEGER,
-    allowNull: false,
-  },
 });
 
-export default Product;
+export default Category;
