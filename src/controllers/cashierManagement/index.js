@@ -5,6 +5,9 @@ import * as config from "../../config/index.js";
 import { ValidationError } from "yup";
 import * as error from "../../midlewares/error.handler.js";
 import db from "../../models/index.js";
+import handlebars from "handlebars";
+import fs from "fs";
+import path from "path";
 
 //@register cashier controller
 export const register = async (req, res, next) => {
@@ -48,11 +51,22 @@ export const register = async (req, res, next) => {
       .json({ message: "Register successful", data: cashier });
 
     //@Send verification link via email
+    const template = fs.readFileSync(
+      path.join(process.cwd(), "templates", "registerCashier.html"),
+      "utf8"
+    );
+    const message = handlebars.compile(template)({
+      fullName,
+      username,
+      defaultPassword,
+      link: config.REDIRECT_URL + `/auth/verify/${accessToken}`,
+    });
+
     const mailOptions = {
       from: config.GMAIL,
       to: email,
-      subject: "Verification Account",
-      html: `<h1>Click <a href="http://localhost:5000/api/auth/verify/${accessToken}">here</a> to verify your account</h1>`,
+      subject: "Welcome to Tokopaedi",
+      html: message,
     };
 
     helpers.transporter.sendMail(mailOptions, (error, info) => {
@@ -85,12 +99,43 @@ export const changeStatusCashier = async (req, res, next) => {
     const cashier = await User?.findOne({ where: { id: id } });
     if (!cashier) throw { status: 400, message: error.USER_DOES_NOT_EXISTS };
 
-    //@update status to 3 (inactive cashier)
+    //@update status to 2 (inactive cashier)
     await User?.update({ status: status }, { where: { id: id } });
     res.status(200).json({ message: "Cashier status changed" });
+
+    //@Send notification via email
+    let templateEmail = "";
+    let subject = "";
+    if (status == 1) {
+      templateEmail = "activationAccount.html";
+      subject = "Re-Activate Account";
+    } else {
+      templateEmail = "deactivateAccount.html";
+      subject = "Deactivate Account";
+    }
+    const template = fs.readFileSync(
+      path.join(process.cwd(), "templates", templateEmail),
+      "utf8"
+    );
+    const message = handlebars.compile(template)({
+      fullName: cashier?.dataValues?.fullName,
+    });
+
+    const mailOptions = {
+      from: config.GMAIL,
+      to: cashier?.dataValues?.email,
+      subject: subject,
+      html: message,
+    };
+
+    helpers.transporter.sendMail(mailOptions, (error, info) => {
+      if (error) throw error;
+      console.log(`Email sent : ${info.response}`);
+    });
+
     await transaction.commit();
   } catch (error) {
-    await transaction.commit();
+    await transaction.rollback();
     next(error);
   }
 };

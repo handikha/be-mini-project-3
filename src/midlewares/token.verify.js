@@ -19,7 +19,7 @@ export async function verifyAdmin(req, res, next) {
     const decoded = verifyToken(token);
 
     // @check if user is admin
-    if (decoded?.role !== 1) throw new Error({ message: "Restricted" });
+    if (decoded?.role !== 1) throw { message: "Restricted" };
 
     next();
   } catch (error) {

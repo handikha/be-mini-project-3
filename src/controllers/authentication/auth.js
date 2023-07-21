@@ -5,6 +5,9 @@ import * as config from "../../config/index.js";
 import { ValidationError } from "yup";
 import * as error from "../../midlewares/error.handler.js";
 import db from "../../models/index.js";
+import handlebars from "handlebars";
+import fs from "fs";
+import path from "path";
 
 //@verify account constroller
 export const verifyAccount = async (req, res, next) => {
@@ -42,7 +45,7 @@ export const changeDefaultPassword = async (req, res, next) => {
     if (!isPasswordCorrect)
       throw { status: 400, message: error.INVALID_CREDENTIALS };
 
-    //@has new password
+    //@hash new password
     const encryptedPassword = helpers.hashPassword(password);
 
     //@udpate password in database and change isVerified to false
@@ -53,60 +56,6 @@ export const changeDefaultPassword = async (req, res, next) => {
 
     //@send response
     res.status(200).json({ message: "Password changed successfully" });
-    await transaction.commit();
-  } catch (error) {
-    await transaction.rollback();
-    if (error instanceof ValidationError) {
-      return next({ status: 400, message: error?.errors?.[0] });
-    }
-    next(error);
-  }
-};
-
-export const register = async (req, res, next) => {
-  const transaction = await db.sequelize.transaction();
-  try {
-    //@get body from request
-    const { fullName, username, email, password, phone } = req.body;
-    await Validation.RegisterValidationSchema.validate(req.body);
-
-    //@check if user exists
-    const userExists = await User?.findOne({
-      where: { username: username, email: email },
-    });
-    if (userExists) throw { status: 400, message: error.USER_ALREADY_EXISTS };
-
-    //@has new password
-    const encryptedPassword = helpers.hashPassword(password);
-
-    //@create new user
-    const newUser = await User?.create({
-      fullName,
-      username,
-      email,
-      password: encryptedPassword,
-      phone,
-    });
-
-    //@generate access token
-    const accessToken = helpers.createToken({
-      id: newUser?.dataValues?.id,
-      role: newUser?.dataValues?.role,
-    });
-
-    const userDto = {
-      fullName: newUser?.dataValues?.fullName,
-      username: newUser?.dataValues?.username,
-      email: newUser?.dataValues?.email,
-      phone: newUser?.dataValues?.phone,
-      role: newUser?.dataValues?.role,
-      status: newUser?.dataValues?.status,
-    };
-
-    res.header("Authorization", `Bearer ${accessToken}`).status(201).json({
-      message: "User created successfully",
-      data: userDto,
-    });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
@@ -140,7 +89,7 @@ export const login = async (req, res, next) => {
       throw { status: 400, message: error.USER_UNVERIFIED };
 
     //@check if user deleted
-    if (userExists?.dataValues?.status === 3)
+    if (userExists?.dataValues?.status === 2)
       throw { status: 400, message: error.USER_DOES_NOT_EXISTS };
 
     //@generate access token
@@ -172,7 +121,7 @@ export const forgetPassword = async (req, res, next) => {
     //@get body from request
     const { email } = req.body;
 
-    //@asume that email is uniqe
+    //@asume that email is unique
     const user = await User?.findOne({ where: { email: email } });
     if (!user) throw { status: 400, message: error.EMAIL_DOES_NOT_EXIS };
 
@@ -183,11 +132,19 @@ export const forgetPassword = async (req, res, next) => {
     });
 
     //@Send verification link to new email
+    const template = fs.readFileSync(
+      path.join(process.cwd(), "templates", "resetPassword.html"),
+      "utf8"
+    );
+    const message = handlebars.compile(template)({
+      fullName: user?.dataValues?.fullName,
+      link: config.REDIRECT_URL + `/auth/reset-password/${accessToken}`,
+    });
     const mailOptions = {
       from: config.GMAIL,
       to: email,
-      subject: "Reset Password",
-      html: `<h1>Click <a href="http://localhost:5000/api/auth/forgetPassword/${accessToken}">here</a> to verify your account</h1>`,
+      subject: "Reset Password - Tokopaedi",
+      html: message,
     };
 
     helpers.transporter.sendMail(mailOptions, (error, info) => {
@@ -211,7 +168,7 @@ export const ressetPassword = async (req, res, next) => {
   try {
     //@get body from request
     const { password, confirmPassword } = req.body;
-    await Validation.ressetPassword.validate(req.body);
+    await Validation.ressetPasswordSchema.validate(req.body);
 
     //@asume front end send the request using header authorization
     //@the header authorization get from forget password url
