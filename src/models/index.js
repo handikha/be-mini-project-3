@@ -1,16 +1,29 @@
-import Sequelize from "sequelize";
-import config from "../config/index.js";
+import User from "./user.js";
+import Product from "./product.js";
+import Category from "./category.js";
+import Order from "./order.js";
+import OrderItem from "./orderItem.js";
 
-// @create suequlize connection
-const db = {};
-const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
-  config
-);
+// User has many Orders, Orders belongs to User
+User.hasMany(Order, {foreignKey: "userId"});
+Order.belongsTo(User, {foreignKey: "userId"});
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
+// Products belongs to Category, Category has many Products
+Product.belongsTo(Category, {foreignKey: "categoryId"});
+Category.hasMany(Product, {foreignKey: "categoryId"});
 
-export default db;
+// Orders has many OrderItems, OrderItems belongs to Orders
+Order.hasMany(OrderItem, {foreignKey: "orderId"});
+OrderItem.belongsTo(Order, {foreignKey: "orderId"});
+
+// Products has many OrderItems, OrderItems belongs to Products
+Product.hasMany(OrderItem, {foreignKey: "productId"});
+OrderItem.belongsTo(Product, {foreignKey: "productId"});
+
+export {
+    User,
+    Product,
+    Category,
+    Order,
+    OrderItem,
+};

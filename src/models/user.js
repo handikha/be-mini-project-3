@@ -1,47 +1,23 @@
-import db from "./index.js";
+import {DataTypes} from "sequelize";
+import sequelize from "../config/database.js";
 
-//@define user models
-const User = db.sequelize.define("users", {
-  id: {
-    type: db.Sequelize.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-    allowNull: false,
-  },
-  fullName: {
-    type: db.Sequelize.STRING,
-    allowNull: false,
-  },
-  username: {
-    type: db.Sequelize.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  email: {
-    type: db.Sequelize.STRING,
-    allowNull: false,
-  },
-  password: {
-    type: db.Sequelize.STRING,
-    allowNull: false,
-  },
-  phone: {
-    type: db.Sequelize.STRING,
-    allowNull: false,
-  },
-  role: {
-    type: db.Sequelize.INTEGER,
-    allowNull: false,
-    defaultValue: 2,
-  },
-  status: {
-    type: db.Sequelize.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  },
-  profileImg: {
-    type: db.Sequelize.STRING,
-  },
+const User = sequelize.define("users", {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false,
+    },
+    fullName: DataTypes.STRING,
+    username: DataTypes.STRING,
+    email: DataTypes.STRING,
+    password: DataTypes.STRING,
+    phone: DataTypes.STRING,
+    role: DataTypes.INTEGER,
+    status: DataTypes.INTEGER,
+    profileImg: DataTypes.STRING,
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
 });
 
 export default User;
