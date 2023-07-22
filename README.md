@@ -87,6 +87,51 @@ authentication/authorization.
 └── README.md
 ```
 
+### Option 3
+
+```plaintext
+/my-app
+├── node_modules/
+├── src/
+│   ├── domain/
+│   │   ├── user/
+│   │   │   ├── User.js  // User entity
+│   │   │   ├── UserController.js  // User operations
+│   │   │   ├── UserRepository.js  // Interface for user data access
+│   │   │   ├── UserRoutes.js  // User API endpoints
+│   │   │   └── UserValidator.js  // Yup validation for user
+│   │   ├── product/
+│   │   │   ├── Product.js  // Product entity
+│   │   │   ├── ProductController.js  // Product operations
+│   │   │   ├── ProductRepository.js  // Interface for product data access
+│   │   │   ├── ProductRoutes.js  // Product API endpoints
+│   │   │   └── ProductValidator.js  // Yup validation for product
+│   │   └── auth/
+│   │       ├── AuthController.js  // Auth operations
+│   │       ├── AuthRoutes.js  // Auth API endpoints
+│   │       └── AuthValidator.js  // Yup validation for Auth
+│   ├── infrastructure/
+│   │   ├── db/
+│   │   │   ├── SequelizeUserRepository.js  // Sequelize implementation of user data access
+│   │   │   └── SequelizeProductRepository.js  // Sequelize implementation of product data access
+│   │   ├── config/
+│   │   │   ├── database.js  // Sequelize MySQL configuration
+│   │   │   ├── s3.js  // AWS S3 configuration
+│   │   │   ├── storage.js  // Local and S3 storage configuration
+│   │   │   └── auth.js  // Authentication configuration
+│   │   ├── middleware/
+│   │   │   └── auth.js  // Middleware for Authentication and Authorization
+│   │   └── services/
+│   │       ├── upload.js  // Services for File upload (Local and S3)
+│   │       └── mail.js  // Services for Email (Nodemailer)
+│   └── app.js
+├── uploads/  // Local storage for development/test environment
+├── package.json
+├── .env  // Environment variables
+├── .gitignore
+└── README.md
+```
+
 ## Setup
 
 1. Install dependencies:
