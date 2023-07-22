@@ -1,8 +1,11 @@
 # POS Backend
 
-This is an Express.js application utilizing REST, Sequelize with MySQL, Yup Validation, AWS S3 or local file upload, and authentication/authorization.
+This is an Express.js application utilizing REST, Sequelize with MySQL, Yup Validation, AWS S3 or local file upload, and
+authentication/authorization.
 
 ## Project Structure
+
+### Option 1
 
 ```plaintext
 /my-app
@@ -27,6 +30,48 @@ This is an Express.js application utilizing REST, Sequelize with MySQL, Yup Vali
 │   │   ├── user.js  // Route for user
 │   │   ├── product.js  // Route for product
 │   │   └── auth.js  // Route for auth
+│   ├── services/
+│   │   ├── upload.js  // Services for File upload (Local and S3)
+│   │   └── email.js  // Service for sending emails
+│   ├── validators/
+│   │   ├── user.js  // Yup validation for User
+│   │   ├── product.js  // Yup validation for Product
+│   │   └── auth.js  // Yup validation for Auth
+│   └── app.js
+├── uploads/  // Local storage for development/test environment
+├── package.json
+├── .env  // Environment variables
+├── .gitignore
+└── README.md
+```
+
+### Option 2
+
+```plaintext
+/my-app
+├── node_modules/
+├── src/
+│   ├── config/
+│   │   ├── database.js  // Sequelize MySQL configuration
+│   │   ├── s3.js  // AWS S3 configuration
+│   │   ├── storage.js  // Local and S3 storage configuration
+│   │   ├── auth.js  // Authentication configuration
+│   │   └── mail.js  // Email configuration (Nodemailer)
+│   ├── models/
+│   │   ├── user.js  // Sequelize model
+│   │   └── product.js  // Sequelize model for product
+│   ├── features/
+│   │   ├── user/
+│   │   │   ├── controller.js  // Controller for User
+│   │   │   └── routes.js  // Routes for user
+│   │   ├── product/
+│   │   │   ├── controller.js  // Controller for Product
+│   │   │   └── routes.js  // Routes for product
+│   │   └── auth/
+│   │       ├── controller.js  // Controller for Auth related operations
+│   │       └── routes.js  // Routes for auth
+│   ├── middleware/
+│   │   └── auth.js  // Middleware for Authentication and Authorization
 │   ├── services/
 │   │   ├── upload.js  // Services for File upload (Local and S3)
 │   │   └── email.js  // Service for sending emails
