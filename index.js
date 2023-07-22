@@ -27,10 +27,12 @@ app.get("/", (req, res) => {
 import AuthRouters from "./src/controllers/authentication/routers.js";
 import CashierManagement from "./src/controllers/cashierManagement/routers.js";
 import Product from "./src/controllers/products/routers.js";
+import Category from "./src/controllers/categories/routers.js";
 
 app.use("/api/v1/auth", AuthRouters);
 app.use("/api/v1/", CashierManagement);
 app.use("/api/v1", Product);
+app.use("/api/v1", Category);
 
 //@global errorHandler
 app.use(middleware.errorHandler);

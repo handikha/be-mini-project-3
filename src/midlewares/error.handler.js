@@ -13,6 +13,7 @@ export const USER_UNVERIFIED = "Cashier is not verified";
 export const EMAIL_ALREADY_EXISTS = "Email already used";
 export const EMAIL_DOES_NOT_EXIS = "Email does not exists";
 export const NOT_FOUND = "Not found";
+export const CATEGORY_ALREADY_EXISTS = "Category already exists";
 
 // @default error status
 export const DEFAULT_ERROR_STATUS = 500;
