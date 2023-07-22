@@ -115,6 +115,31 @@ export const login = async (req, res, next) => {
   }
 };
 
+//@keep Login constroller
+export const keepLogin = async (req, res, next) => {
+  try {
+    //@asume frontend send the request using header authorization
+    const token = req.headers.authorization?.split(" ")[1];
+    const decodedToken = helpers.verifyToken(token);
+
+    const user = await User?.findOne({
+      where: { id: decodedToken?.id },
+    });
+
+    //@delete password before sending response
+    delete user?.dataValues?.password;
+
+    //@send response
+    res.status(200).json({ user });
+  } catch (error) {
+    // @check if error from validation
+    if (error instanceof ValidationError) {
+      return next({ status: 400, message: error?.errors?.[0] });
+    }
+    next(error);
+  }
+};
+
 //@forget Password constroller
 export const forgetPassword = async (req, res, next) => {
   try {
