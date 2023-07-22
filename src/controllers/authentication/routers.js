@@ -9,6 +9,7 @@ const router = Router();
 
 //@Authentication
 router.post("/login", AuthControllers.login);
+router.get("/", AuthControllers.keepLogin);
 router.get("/verify/:token", AuthControllers.verifyAccount);
 router.patch(
   "/change-default-password",
