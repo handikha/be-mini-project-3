@@ -13,7 +13,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({exposedHeaders: "Authorization"}));
+app.use(cors({ exposedHeaders: "Authorization" }));
 app.use(bodyParser.json());
 
 // Routes
@@ -21,25 +21,25 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/order-items", orderItemRoutes)
+app.use("/api/order-items", orderItemRoutes);
 
 app.get("/", (req, res) => {
-    res.json({message: "Welcome to the POS API"});
+  res.json({ message: "Welcome to the POS API" });
 });
 
 // Default error handler
 app.use((err, req, res, next) => {
-    if (res.headersSent) {
-        return next(err);
-    }
-    res.status(500);
-    res.json({error: err.message});
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(500);
+  res.json({ error: err.message });
 });
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}.`);
+  console.log(`Server is running on port ${PORT}.`);
 });
 
 export default app;
