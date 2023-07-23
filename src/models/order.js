@@ -15,6 +15,9 @@ const Order = sequelize.define("orders", {
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,
   isDeleted: DataTypes.BOOLEAN,
+  isPaid: DataTypes.BOOLEAN,
+  payAmount: DataTypes.INTEGER,
+  payBackAmount: DataTypes.INTEGER,
 });
 
 export default Order;

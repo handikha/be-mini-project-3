@@ -7,6 +7,7 @@ import categoryRoutes from "./features/category/routes.js";
 import orderRoutes from "./features/order/routes.js";
 import orderItemRoutes from "./features/orderItem/routes.js";
 import userRoutes from "./features/user/routes.js";
+import transactionRoutes from "./features/transaction/routes.js";
 
 import dotenv from "dotenv";
 
@@ -24,6 +25,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/order-items", orderItemRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to the POS API" });

@@ -15,12 +15,7 @@ const register = async (req, res) => {
       password: hashedPassword,
     });
 
-    const token = await login({ username, password });
-
-    return res
-      .status(201)
-      .headers("Authorization", token)
-      .send({ message: "User was registered successfully!" });
+    return login(req, res);
   } catch (err) {
     return res.status(500).send({ message: err.message });
   }
@@ -28,32 +23,24 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { username, password } = req.body;
-
   try {
     const user = await User.findOne({ where: { username } });
-
     if (!user) {
       return res.status(404).send({ message: "User Not found." });
     }
-
-    const passwordIsValid = bcrypt.compareSync(password, user.password);
-
-    if (!passwordIsValid) {
+    if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).send({
         accessToken: null,
         message: "Invalid Password!",
       });
     }
-
-    const token = jsonwebtoken.sign({ id: user.id }, secret, {
-      expiresIn: expiresIn,
-    });
-
     return res.status(200).send({
       id: user.id,
       username: user.username,
       email: user.email,
-      accessToken: token,
+      accessToken: jsonwebtoken.sign({ id: user.id }, secret, {
+        expiresIn,
+      }),
     });
   } catch (err) {
     return res.status(500).send({ message: err.message });
