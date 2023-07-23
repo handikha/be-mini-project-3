@@ -13,12 +13,16 @@ import path from "path";
 export const register = async (req, res, next) => {
   //@Sequelize transaction
   const transaction = await db.sequelize.transaction();
+  const profileImg = req?.files?.["file"][0].filename;
   try {
-    const { fullName, username, email, phone } = req.body;
-    await Validation.RegisterValidationSchema.validate(req.body);
+    const { data } = req.body;
+    const body = JSON.parse(data);
+    await Validation.RegisterValidationSchema.validate(body);
 
     //@check if user is already registered
-    const cashierExist = await User?.findOne({ where: { username, email } });
+    const cashierExist = await User?.findOne({
+      where: { username: body.username, email: body.email },
+    });
     if (cashierExist) throw { status: 400, message: error.USER_ALREADY_EXISTS };
 
     //Give a cashier default password
@@ -28,11 +32,12 @@ export const register = async (req, res, next) => {
     //@encrypt user default password using bcrypt
     const encryptedPassword = helpers.hashPassword(defaultPassword);
     const cashier = await User.create({
-      fullName,
-      username,
-      email,
-      phone,
+      fullName: body.fullName,
+      username: body.username,
+      email: body.email,
+      phone: body.phone,
       password: encryptedPassword,
+      profileImg: "public/images/profiles/" + profileImg,
     });
 
     //@delete data password before sending response
@@ -44,27 +49,21 @@ export const register = async (req, res, next) => {
       role: cashier?.dataValues?.role,
     });
 
-    //@send response
-    res
-      .header("Authorization", `Bearer ${accessToken}`)
-      .status(200)
-      .json({ message: "Register successful", data: cashier });
-
     //@Send verification link via email
     const template = fs.readFileSync(
       path.join(process.cwd(), "templates", "registerCashier.html"),
       "utf8"
     );
     const message = handlebars.compile(template)({
-      fullName,
-      username,
+      fullName: body.fullName,
+      username: body.username,
       defaultPassword,
       link: config.REDIRECT_URL + `/auth/verify/${accessToken}`,
     });
 
     const mailOptions = {
       from: config.GMAIL,
-      to: email,
+      to: body.email,
       subject: "Welcome to Tokopaedi",
       html: message,
     };
@@ -73,6 +72,12 @@ export const register = async (req, res, next) => {
       if (error) throw error;
       console.log(`Email sent : ${info.response}`);
     });
+
+    //@send response
+    res
+      .header("Authorization", `Bearer ${accessToken}`)
+      .status(200)
+      .json({ message: "Register successful", data: cashier });
 
     // @commit transaction
     await transaction.commit();
@@ -159,7 +164,7 @@ export const getCashierInfo = async (req, res, next) => {
 
     //@get cashier info
     const { count, rows: users } = await User.findAndCountAll({
-      where: { status: parseInt(status), role: 2 },
+      where: { role: 2 },
       order: [["createdAt", sort]],
       offset,
       limit,
@@ -178,6 +183,32 @@ export const getCashierInfo = async (req, res, next) => {
       result: users,
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+//@update profile cashier
+export const updateProfile = async (req, res, next) => {
+  const transaction = await db.sequelize.transaction();
+  try {
+    const { id } = req.params;
+    const { fullName, username, email, phone } = req.body;
+
+    //@Check if cashier exists
+    const cashier = await User?.findOne({ where: { id: id } });
+    if (!cashier) throw { status: 400, message: error.USER_DOES_NOT_EXISTS };
+
+    await User?.update(
+      { fullName: fullName, username: username, email: email, phone: phone },
+      { where: { id: id } }
+    );
+    res
+      .status(200)
+      .json({ message: "Profile change successfully", data: cashier });
+
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
     next(error);
   }
 };
