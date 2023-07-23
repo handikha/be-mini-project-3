@@ -1,17 +1,15 @@
 import yup from "yup";
 
-const createProductSchema = yup.object().shape({
-    name: yup.string().required("Name is required"),
-    description: yup.string().required("Description is required"),
-    price: yup.number().required("Price is required"),
-    image: yup.string().required("Image is required"),
+const createOrderItemSchema = yup.object().shape({
+    orderId: yup.number().required("Order id is required"),
+    productId: yup.number().required("Product id is required"),
+    quantity: yup.number().required("Quantity is required"),
 });
 
-const updateProductSchema = yup.object().shape({
-    name: yup.string(),
-    description: yup.string(),
-    price: yup.number(),
-    image: yup.string()
+const updateOrderItemSchema = yup.object().shape({
+    orderId: yup.number().required("Order id is required"),
+    productId: yup.number().required("Product id is required"),
+    quantity: yup.number().required("Quantity is required"),
 });
 
 const validate = (schema, body) => {
@@ -30,6 +28,7 @@ const validate = (schema, body) => {
 
 export {
     validate,
-    createProductSchema,
-    updateProductSchema
-};
+    createOrderItemSchema,
+    updateOrderItemSchema
+
+}

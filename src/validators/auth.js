@@ -59,7 +59,7 @@ const validate = (schema, body) => {
         });
 };
 
-export default {
+export {
     registerSchema,
     loginSchema,
     changePasswordSchema,

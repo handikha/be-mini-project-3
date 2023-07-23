@@ -57,7 +57,7 @@ const isAdmin = async (req, res, next) => {
     }
 };
 
-export default {
+export {
     verifyToken,
     isAdmin,
 };

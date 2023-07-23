@@ -3,6 +3,9 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import authRoutes from "./features/auth/routes.js";
 import productRoutes from "./features/product/routes.js";
+import categoryRoutes from "./features/category/routes.js";
+import orderRoutes from "./features/order/routes.js";
+import orderItemRoutes from "./features/orderItem/routes.js";
 
 import dotenv from "dotenv";
 
@@ -16,7 +19,9 @@ app.use(bodyParser.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
-// app.use("/api/users", userRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/order-items", orderItemRoutes)
 
 app.get("/", (req, res) => {
     res.json({message: "Welcome to the POS API"});
