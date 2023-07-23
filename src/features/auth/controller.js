@@ -15,7 +15,7 @@ const register = async (req, res) => {
       password: hashedPassword,
     });
 
-    const token = login({ username, password });
+    const token = await login({ username, password });
 
     return res
       .status(201)
