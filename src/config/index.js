@@ -33,5 +33,6 @@ const db_config = Object.freeze({
 export const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 export const GMAIL = process.env.GMAIL;
 export const GMAIL_APP_KEY = process.env.GMAIL_APP_KEY;
+export const REDIRECT_URL = process.env.REDIRECT_URL;
 
 export default db_config[process.env.NODE_ENV || "development"];

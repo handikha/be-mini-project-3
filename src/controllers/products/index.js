@@ -25,7 +25,7 @@ export const getAllProducts = async (req, res, next) => {
     });
     res.status(200).json({
       type: "success",
-      message: "Blogs fetched",
+      message: "Products fetched",
       total_elements: total,
       blog_per_page: +limit,
       current_page: +page,
