@@ -13,18 +13,16 @@ const router = Router();
 
 router.post(
   "/products",
-  verifyAdmin,
   uploader.fields([{ name: "data" }, { name: "file" }]),
   products.createProduct
 );
-router.get("/products", products.getAllProducts);
-router.get("/products/:id", verifyAdmin, products.getProductById);
+router.get("/products", products.getAllProducts); //not verify admin
+router.get("/products/:id", products.getProductById);
 router.patch(
   "/products/:id",
-  verifyAdmin,
   uploader.fields([{ name: "data" }, { name: "file" }]),
   products.updateProduct
 );
-router.delete("/products/:id", verifyAdmin, products.deleteProduct);
+router.delete("/products/:id", products.deleteProduct);
 
 export default router;

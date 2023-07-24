@@ -52,7 +52,7 @@ export const getProductById = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
-  const thumbnail = req?.files?.["file"][0].filename;
+  const thumbnail = req?.files?.["file"][0]?.filename;
   try {
     const { data } = req.body;
     const body = JSON.parse(data);

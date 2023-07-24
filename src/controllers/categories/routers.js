@@ -5,10 +5,10 @@ import * as categories from "./index.js";
 
 const router = Router();
 
-router.post("/categories", verifyAdmin, categories.createCategory);
-router.get("/categories", categories.getAllCategories);
-router.get("/categories/:id", verifyAdmin, categories.getCategoryById);
-router.patch("/categories/:id", verifyAdmin, categories.updateCategory);
-router.delete("/categories/:id", verifyAdmin, categories.deleteCategory);
+router.post("/categories", categories.createCategory);
+router.get("/categories", categories.getAllCategories); // not verifyAdmin
+router.get("/categories/:id", categories.getCategoryById);
+router.patch("/categories/:id", categories.updateCategory);
+router.delete("/categories/:id", categories.deleteCategory);
 
 export default router;
