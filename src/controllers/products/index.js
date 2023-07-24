@@ -126,14 +126,11 @@ export const updateProduct = async (req, res, next) => {
 
     await product.save();
 
-    // Commit transaksi jika semuanya berhasil
-    await transaction.commit();
-
     res
       .status(200)
       .json({ message: "Product updated successfully", data: product });
+    await transaction.commit();
   } catch (error) {
-    // Rollback transaksi jika terjadi kesalahan
     await transaction.rollback();
 
     // Jika terjadi kesalahan, hapus gambar yang mungkin sudah terunggah
