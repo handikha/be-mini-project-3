@@ -25,7 +25,7 @@ export const getAllProducts = async (req, res, next) => {
     });
     res.status(200).json({
       type: "success",
-      message: "Blogs fetched",
+      message: "Products fetched",
       total_elements: total,
       blog_per_page: +limit,
       current_page: +page,
@@ -52,7 +52,7 @@ export const getProductById = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
-  const thumbnail = req?.files?.["file"][0].filename;
+  const thumbnail = req?.files?.["file"][0]?.filename;
   try {
     const { data } = req.body;
     const body = JSON.parse(data);
@@ -60,6 +60,7 @@ export const createProduct = async (req, res, next) => {
     const productExists = await Product?.findOne({
       where: { name: body.name },
     });
+
     if (productExists) {
       throw new Error("Product already exists");
     }
@@ -126,14 +127,11 @@ export const updateProduct = async (req, res, next) => {
 
     await product.save();
 
-    // Commit transaksi jika semuanya berhasil
-    await transaction.commit();
-
     res
       .status(200)
       .json({ message: "Product updated successfully", data: product });
+    await transaction.commit();
   } catch (error) {
-    // Rollback transaksi jika terjadi kesalahan
     await transaction.rollback();
 
     // Jika terjadi kesalahan, hapus gambar yang mungkin sudah terunggah
