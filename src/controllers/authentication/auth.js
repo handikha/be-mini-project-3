@@ -12,12 +12,8 @@ import path from 'path';
 //@verify account constroller
 export const verifyAccount = async (req, res, next) => {
   try {
-    //@get token params
-    const { token } = req.params;
-
-    //@verify the token
+    const token = req.headers.authorization?.split(" ")[1];
     const decodedToken = helpers.verifyToken(token);
-
     //@update isVerified field to 1
     await User?.update({ status: 1 }, { where: { id: decodedToken?.id } });
     // @return response
@@ -28,7 +24,7 @@ export const verifyAccount = async (req, res, next) => {
 };
 
 //@Change default password
-export const changeDefaultPassword = async (req, res, next) => {
+export const changePassword = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
   try {
     //@get body from request
@@ -142,6 +138,8 @@ export const forgetPassword = async (req, res, next) => {
       id: user.id,
       role: user.role,
     });
+
+    await User?.update({ status: 0 }, { where: { id: user.id } });
 
     //@Send verification link to new email
     const template = fs.readFileSync(path.join(process.cwd(), 'templates', 'resetPassword.html'), 'utf8');
