@@ -1,11 +1,7 @@
 import { Router } from "express";
 import controller from "./controller.js";
 import verifySignUp from "../../middlewares/verifySignUp.js";
-import {
-  loginSchema,
-  registerSchema,
-  validate,
-} from "../../validators/auth.js";
+import { loginSchema, registerSchema, validate } from "../../validators/auth.js";
 
 const router = Router();
 
@@ -16,7 +12,10 @@ router.post(
       await validate(registerSchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   verifySignUp.checkDuplicateUsernameOrEmail,
@@ -30,7 +29,10 @@ router.post(
       await validate(loginSchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   controller.login,

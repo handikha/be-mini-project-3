@@ -29,26 +29,8 @@ const changePasswordSchema = yup.object().shape({
     .string()
     .min(6, "Password must be at least 6 characters.")
     .matches(/^[a-zA-Z0-9]+$/, "Password must be alphanumeric.")
-    .notOneOf(
-      [yup.ref("currentPassword")],
-      "New password must be different from current password.",
-    )
+    .notOneOf([yup.ref("currentPassword")], "New password must be different from current password.")
     .required("New password is required."),
-});
-
-const resetPasswordSchema = yup.object().shape({
-  password: yup
-    .string()
-    .min(6, "Password must be at least 6 characters.")
-    .notOneOf(
-      [yup.ref("currentPassword")],
-      "New password must be different from current password.",
-    )
-    .required("New password is required."),
-  confirmPassword: yup
-    .string()
-    .oneOf([yup.ref("password"), null], "Passwords must match.")
-    .required("Confirm password is required."),
 });
 
 const validate = (schema, body) => {
@@ -58,21 +40,30 @@ const validate = (schema, body) => {
       return acc;
     }, {});
 
-    throw err.name === "ValidationError"
-      ? {
-          status: 400,
-          message: "Validation error",
-          errors: errors,
-          errorsArray: err.inner.map((e) => e.message),
-        }
-      : err;
+    if (err.name === "ValidationError") {
+      throw {
+        status: 400,
+        message: "Validation error",
+        errors: errors,
+        errorsArray: err.inner.map((e) => e.message),
+      };
+    } else {
+      throw err;
+    }
   });
 };
 
+const resetPasswordSchema = yup.object({
+  password: yup.string()
+    .min(6, "Password must be at least 6 characters.")
+    .matches(/^[a-zA-Z0-9]+$/, "Password must be alphanumeric.")
+    .notOneOf([yup.ref("currentPassword")], "New password must be different from current password.")
+    .required("New password is required."),
+  confirmPassword: yup.string()
+    .oneOf([yup.ref("password"), null], "Passwords must match.")
+    .required("Confirm password is required."),
+});
+
 export {
-  registerSchema,
-  loginSchema,
-  changePasswordSchema,
-  resetPasswordSchema,
-  validate,
+  registerSchema, loginSchema, changePasswordSchema, resetPasswordSchema, validate,
 };

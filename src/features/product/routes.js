@@ -1,17 +1,7 @@
 import { Router } from "express";
-import {
-  createProduct,
-  deleteProduct,
-  getProduct,
-  getProducts,
-  updateProduct,
-} from "./controller.js";
+import { createProduct, deleteProduct, getProduct, getProducts, updateProduct } from "./controller.js";
 import { isAdmin, verifyToken } from "../../middlewares/auth.js";
-import {
-  createProductSchema,
-  updateProductSchema,
-  validate,
-} from "../../validators/product.js";
+import { createProductSchema, updateProductSchema, validate } from "../../validators/product.js";
 
 const router = Router();
 
@@ -24,7 +14,10 @@ router.post(
       await validate(createProductSchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   isAdmin,
@@ -37,7 +30,10 @@ router.put(
       await validate(updateProductSchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   isAdmin,

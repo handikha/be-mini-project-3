@@ -1,11 +1,5 @@
 import { Router } from "express";
-import {
-  createOrder,
-  deleteOrder,
-  getOrder,
-  getOrders,
-  updateOrder,
-} from "./controller.js";
+import { createOrder, deleteOrder, getOrder, getOrders, updateOrder } from "./controller.js";
 import { verifyToken } from "../../middlewares/auth.js";
 import { createOrderSchema, validate } from "../../validators/order.js";
 
@@ -21,7 +15,10 @@ router.post(
       await validate(createOrderSchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   createOrder,

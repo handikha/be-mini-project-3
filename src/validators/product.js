@@ -23,11 +23,11 @@ const validate = (schema, body) => {
 
     throw err.name === "ValidationError"
       ? {
-          status: 400,
-          message: "Validation error",
-          errors: errors,
-          errorsArray: err.inner.map((e) => e.message),
-        }
+        status: 400,
+        message: "Validation error",
+        errors: errors,
+        errorsArray: err.inner.map((e) => e.message),
+      }
       : err;
   });
 };

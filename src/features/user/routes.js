@@ -13,7 +13,10 @@ router.put(
       await validate(upgradeToAdminSchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   upgradeToAdmin,

@@ -1,10 +1,6 @@
 import { Router } from "express";
 import { createCategory, getCategories, getCategory } from "./controller.js";
-import {
-  createCategorySchema,
-  updateCategorySchema,
-  validate,
-} from "../../validators/category.js";
+import { createCategorySchema, updateCategorySchema, validate } from "../../validators/category.js";
 import { isAdmin, verifyToken } from "../../middlewares/auth.js";
 
 const router = Router();
@@ -18,7 +14,10 @@ router.post(
       await validate(createCategorySchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   isAdmin,
@@ -29,7 +28,10 @@ router.put("/:id", async (req, res, next) => {
     await validate(updateCategorySchema, req.body);
     next();
   } catch (err) {
-    res.status(err.status).json({ message: err.message, errors: err.errors });
+    res.status(err.status).json({
+      message: err.message,
+      errors: err.errors,
+    });
   }
 });
 router.delete("/:id", isAdmin);

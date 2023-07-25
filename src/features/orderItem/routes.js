@@ -1,17 +1,7 @@
 import { Router } from "express";
-import {
-  createOrderItem,
-  deleteOrderItem,
-  getOrderItem,
-  getOrderItems,
-  updateOrderItem,
-} from "./controller.js";
+import { createOrderItem, deleteOrderItem, getOrderItem, getOrderItems, updateOrderItem } from "./controller.js";
 import { verifyToken } from "../../middlewares/auth.js";
-import {
-  createOrderItemSchema,
-  updateOrderItemSchema,
-  validate,
-} from "../../validators/orderItem.js";
+import { createOrderItemSchema, updateOrderItemSchema, validate } from "../../validators/orderItem.js";
 
 const router = Router();
 
@@ -25,7 +15,10 @@ router.post(
       await validate(createOrderItemSchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   createOrderItem,
@@ -38,7 +31,10 @@ router.put(
       await validate(updateOrderItemSchema, req.body);
       next();
     } catch (err) {
-      res.status(err.status).json({ message: err.message, errors: err.errors });
+      res.status(err.status).json({
+        message: err.message,
+        errors: err.errors,
+      });
     }
   },
   updateOrderItem,

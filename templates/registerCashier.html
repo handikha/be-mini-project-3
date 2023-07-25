@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Welcome to Tokopaedi</title>
+</head>
+
+<body
+        style="
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    "
+>
+<div style="background-color: #f5f5f5; padding: 20px">
+    <table
+            style="max-width: 600px; margin: 0 auto; background-color: #ffffff"
+    >
+        <tr>
+            <td style="padding: 20px">
+                <h1 style="color: #333333">Welcome to Tokopaedi!</h1>
+                <p style="color: #333333">Dear {{fullName}},</p>
+                <p style="color: #333333">
+                    We are thrilled to have you join our team and begin this exciting
+                    journey together. As you embark on your new role, we want to
+                    provide you with the necessary information to get started.
+                </p>
+                <p style="color: #333333">
+                    Below are your account credentials to access our system:
+                </p>
+                <p style="color: #333333">
+                    <strong>Username :</strong> {{username}}
+                </p>
+                <p style="color: #333333">
+                    <strong>Password :</strong> {{defaultPassword}}
+                </p>
+                <p style="color: #333333">
+                    Please use the following link to verify and activate your account:
+                </p>
+                <p style="color: #333333">
+                    <a href="{{link}}" style="color: #007bff; text-decoration: none"
+                    >Activate Account</a
+                    >
+                </p>
+                <p style="color: #333333">
+                    For security purposes, you have to change your password. Remember
+                    to choose a strong, unique password to ensure the safety of your
+                    account.
+                </p>
+                <p style="color: #333333">
+                    Once again, welcome to Tokopaedi! We are looking forward to
+                    working with you and witnessing your contributions to our shared
+                    success.
+                </p>
+                <p style="color: #333333">
+                    Best regards,<br/>Tokopaedi Team<br/>
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td
+                    style="
+              background-color: #007bff;
+              text-align: center;
+              padding: 10px;
+              color: #ffffff;
+            "
+            >
+                &copy; 2023 Tokopaedi. All rights reserved.
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>
