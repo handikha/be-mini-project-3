@@ -60,6 +60,7 @@ export const createProduct = async (req, res, next) => {
     const productExists = await Product?.findOne({
       where: { name: body.name },
     });
+
     if (productExists) {
       throw new Error("Product already exists");
     }
