@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import chalk from 'chalk';
 
 // @middleware logger
 export function requestLogger(req, res, next) {

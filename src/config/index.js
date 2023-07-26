@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
 dotenv.config();
 
 // @create db configuration
@@ -9,7 +9,7 @@ const db_config = Object.freeze({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
     host: process.env.DB_HOST,
-    dialect: "mysql",
+    dialect: 'mysql',
   },
   test: {
     username: process.env.DB_USER,
@@ -17,7 +17,7 @@ const db_config = Object.freeze({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
     host: process.env.DB_HOST,
-    dialect: "mysql",
+    dialect: 'mysql',
   },
   production: {
     username: process.env.DB_USER,
@@ -25,7 +25,7 @@ const db_config = Object.freeze({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
     host: process.env.DB_HOST,
-    dialect: "mysql",
+    dialect: 'mysql',
   },
 });
 
@@ -35,4 +35,4 @@ export const GMAIL = process.env.GMAIL;
 export const GMAIL_APP_KEY = process.env.GMAIL_APP_KEY;
 export const REDIRECT_URL = process.env.REDIRECT_URL;
 
-export default db_config[process.env.NODE_ENV || "development"];
+export default db_config[process.env.NODE_ENV || 'development'];

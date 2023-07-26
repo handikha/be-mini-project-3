@@ -1,30 +1,23 @@
-import { Router } from "express";
-import { verifyUser, verifyAdmin } from "../../midlewares/token.verify.js";
-import { createThumbnailUploader } from "../../helpers/uploader.js";
-import path from "path";
+import { Router } from 'express';
+import { verifyAdmin } from '../../midlewares/index.js';
+import { createThumbnailUploader } from '../../helpers/uploader.js';
+import path from 'path';
 
-import * as products from "./index.js";
+import * as products from './index.js';
 
-const uploader = createThumbnailUploader(
-  path.join(process.cwd(), "public", "images", "thumbnails")
-);
+const uploader = createThumbnailUploader(path.join(process.cwd(), 'public', 'images', 'thumbnails'));
 
 const router = Router();
 
-router.post(
-  "/products",
-  verifyAdmin,
-  uploader.fields([{ name: "data" }, { name: "file" }]),
-  products.createProduct
-);
-router.get("/products", products.getAllProducts);
-router.get("/products/:id", verifyAdmin, products.getProductById);
+router.post('/products', verifyAdmin, uploader.fields([{ name: 'data' }, { name: 'file' }]), products.createProduct);
+router.get('/products', products.getAllProducts);
+router.get('/products/:id', verifyAdmin, products.getProductById);
 router.patch(
-  "/products/:id",
+  '/products/:id',
   verifyAdmin,
-  uploader.fields([{ name: "data" }, { name: "file" }]),
+  uploader.fields([{ name: 'data' }, { name: 'file' }]),
   products.updateProduct
 );
-router.delete("/products/:id", verifyAdmin, products.deleteProduct);
+router.delete('/products/:id', verifyAdmin, products.deleteProduct);
 
 export default router;

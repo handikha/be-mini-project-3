@@ -1,7 +1,7 @@
-import db from "./index.js";
+import db from './index.js';
 
 //@define user models
-const User = db.sequelize.define("users", {
+const User = db.sequelize.define('users', {
   id: {
     type: db.Sequelize.INTEGER,
     primaryKey: true,

@@ -1,13 +1,13 @@
-import User from "../../models/user.js";
-import * as helpers from "../../helpers/index.js";
-import * as Validation from "./validation.js";
-import * as config from "../../config/index.js";
-import { ValidationError } from "yup";
-import * as error from "../../midlewares/error.handler.js";
-import db from "../../models/index.js";
-import handlebars from "handlebars";
-import fs from "fs";
-import path from "path";
+import User from '../../models/user.js';
+import * as helpers from '../../helpers/index.js';
+import * as Validation from './validation.js';
+import * as config from '../../config/index.js';
+import { ValidationError } from 'yup';
+import * as error from '../../midlewares/error.handler.js';
+import db from '../../models/index.js';
+import handlebars from 'handlebars';
+import fs from 'fs';
+import path from 'path';
 
 //@verify account constroller
 export const verifyAccount = async (req, res, next) => {
@@ -21,7 +21,7 @@ export const verifyAccount = async (req, res, next) => {
     //@update isVerified field to 1
     await User?.update({ status: 1 }, { where: { id: decodedToken?.id } });
     // @return response
-    res.status(200).json({ message: "Account verified successfully" });
+    res.status(200).json({ message: 'Account verified successfully' });
   } catch (error) {
     next(error);
   }
@@ -32,30 +32,23 @@ export const changeDefaultPassword = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
   try {
     //@get body from request
-    const { currentPassword, password, confirmPassword } = req.body;
+    const { currentPassword, password } = req.body;
     await Validation.changePasswordSchema.validate(req.body);
 
     const user = await User?.findOne({ where: { id: req?.user.id } });
 
     //@check default password
-    const isPasswordCorrect = helpers.comparePassword(
-      currentPassword,
-      user?.dataValues?.password
-    );
-    if (!isPasswordCorrect)
-      throw { status: 400, message: error.INVALID_CREDENTIALS };
+    const isPasswordCorrect = helpers.comparePassword(currentPassword, user?.dataValues?.password);
+    if (!isPasswordCorrect) throw { status: 400, message: error.INVALID_CREDENTIALS };
 
     //@hash new password
     const encryptedPassword = helpers.hashPassword(password);
 
     //@udpate password in database and change isVerified to false
-    await User?.update(
-      { password: encryptedPassword },
-      { where: { id: req.user.id } }
-    );
+    await User?.update({ password: encryptedPassword }, { where: { id: req.user.id } });
 
     //@send response
-    res.status(200).json({ message: "Password changed successfully" });
+    res.status(200).json({ message: 'Password changed successfully' });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
@@ -77,20 +70,14 @@ export const login = async (req, res, next) => {
     if (!userExists) throw { status: 400, message: error.USER_DOES_NOT_EXISTS };
 
     //@check password
-    const isPasswordCorrect = helpers.comparePassword(
-      password,
-      userExists?.dataValues?.password
-    );
-    if (!isPasswordCorrect)
-      throw { status: 400, message: error.INVALID_CREDENTIALS };
+    const isPasswordCorrect = helpers.comparePassword(password, userExists?.dataValues?.password);
+    if (!isPasswordCorrect) throw { status: 400, message: error.INVALID_CREDENTIALS };
 
     //@check if user verified
-    if (userExists?.dataValues?.status === 0)
-      throw { status: 400, message: error.USER_UNVERIFIED };
+    if (userExists?.dataValues?.status === 0) throw { status: 400, message: error.USER_UNVERIFIED };
 
     //@check if user deleted
-    if (userExists?.dataValues?.status === 2)
-      throw { status: 400, message: error.USER_DOES_NOT_EXISTS };
+    if (userExists?.dataValues?.status === 2) throw { status: 400, message: error.USER_DOES_NOT_EXISTS };
 
     //@generate access token
     const accessToken = helpers.createToken({
@@ -103,9 +90,9 @@ export const login = async (req, res, next) => {
 
     //@send response
     res
-      .header("Authorization", `Bearer ${accessToken}`)
+      .header('Authorization', `Bearer ${accessToken}`)
       .status(200)
-      .json({ message: "Login Successfull", data: userExists });
+      .json({ message: 'Login Successfull', data: userExists });
   } catch (error) {
     // @check if error from validation
     if (error instanceof ValidationError) {
@@ -119,7 +106,7 @@ export const login = async (req, res, next) => {
 export const keepLogin = async (req, res, next) => {
   try {
     //@asume frontend send the request using header authorization
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.headers.authorization?.split(' ')[1];
     const decodedToken = helpers.verifyToken(token);
 
     const user = await User?.findOne({
@@ -157,10 +144,7 @@ export const forgetPassword = async (req, res, next) => {
     });
 
     //@Send verification link to new email
-    const template = fs.readFileSync(
-      path.join(process.cwd(), "templates", "resetPassword.html"),
-      "utf8"
-    );
+    const template = fs.readFileSync(path.join(process.cwd(), 'templates', 'resetPassword.html'), 'utf8');
     const message = handlebars.compile(template)({
       fullName: user?.dataValues?.fullName,
       link: config.REDIRECT_URL + `/auth/reset-password/${accessToken}`,
@@ -168,7 +152,7 @@ export const forgetPassword = async (req, res, next) => {
     const mailOptions = {
       from: config.GMAIL,
       to: email,
-      subject: "Reset Password - Tokopaedi",
+      subject: 'Reset Password - Tokopaedi',
       html: message,
     };
 
@@ -178,10 +162,7 @@ export const forgetPassword = async (req, res, next) => {
     });
 
     //@send response
-    res
-      .header("Authorization", `Bearer ${accessToken}`)
-      .status(200)
-      .json({ message: "Please check your email" });
+    res.header('Authorization', `Bearer ${accessToken}`).status(200).json({ message: 'Please check your email' });
   } catch (error) {
     next(error);
   }
@@ -192,28 +173,22 @@ export const ressetPassword = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
   try {
     //@get body from request
-    const { password, confirmPassword } = req.body;
+    const { password } = req.body;
     await Validation.ressetPasswordSchema.validate(req.body);
 
     //@asume front end send the request using header authorization
     //@the header authorization get from forget password url
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.headers.authorization?.split(' ')[1];
     const decodedToken = helpers.verifyToken(token);
 
     //@has new password
     const encryptedPassword = helpers.hashPassword(password);
 
     //@udpate password in database and isVerified set to 1
-    await User?.update(
-      { password: encryptedPassword },
-      { where: { id: decodedToken?.id } }
-    );
+    await User?.update({ password: encryptedPassword }, { where: { id: decodedToken?.id } });
 
     //@send response
-    res
-      .header("Authorization", `Bearer ${token}`)
-      .status(200)
-      .json({ message: "Password resset successfully" });
+    res.header('Authorization', `Bearer ${token}`).status(200).json({ message: 'Password resset successfully' });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();

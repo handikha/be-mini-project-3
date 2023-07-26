@@ -1,8 +1,7 @@
-import Product from "../../models/products.js";
-import fs from "fs";
-import path from "path";
-import * as error from "../../midlewares/error.handler.js";
-import db from "../../models/index.js";
+import Product from '../../models/products.js';
+import fs from 'fs';
+import path from 'path';
+import db from '../../models/index.js';
 
 export const getAllProducts = async (req, res, next) => {
   try {
@@ -13,19 +12,17 @@ export const getAllProducts = async (req, res, next) => {
       limit: limit ? parseInt(limit) : 10,
     };
 
-    const total = category_id
-      ? await Product?.count({ where: { categoryId: category_id } })
-      : await Product?.count();
+    const total = category_id ? await Product?.count({ where: { categoryId: category_id } }) : await Product?.count();
 
     const pages = Math.ceil(total / options.limit);
     const products = await Product.findAll({
       where: category_id ? { categoryId: category_id } : {},
-      order: [["name", sort ? sort : "ASC"]],
+      order: [['name', sort ? sort : 'ASC']],
       ...options,
     });
     res.status(200).json({
-      type: "success",
-      message: "Products fetched",
+      type: 'success',
+      message: 'Products fetched',
       total_elements: total,
       blog_per_page: +limit,
       current_page: +page,
@@ -42,7 +39,7 @@ export const getProductById = async (req, res, next) => {
   try {
     const product = await Product.findOne({ where: { id: req.params.id } });
     if (!product) {
-      throw new Error("Product not found");
+      throw new Error('Product not found');
     }
     res.status(200).json({ product });
   } catch (error) {
@@ -52,7 +49,7 @@ export const getProductById = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
-  const thumbnail = req?.files?.["file"][0]?.filename;
+  const thumbnail = req?.files?.['file'][0]?.filename;
   try {
     const { data } = req.body;
     const body = JSON.parse(data);
@@ -62,32 +59,27 @@ export const createProduct = async (req, res, next) => {
     });
 
     if (productExists) {
-      throw new Error("Product already exists");
+      throw new Error('Product already exists');
     }
     const product = await Product?.create({
       name: body?.name,
       price: body?.price,
       description: body?.description,
       categoryId: +body?.categoryId,
-      image: "public/images/thumbnails/" + thumbnail,
+      image: 'public/images/thumbnails/' + thumbnail,
     });
 
-    res
-      .status(200)
-      .json({ message: "Product Added Successfully", data: product });
+    res.status(200).json({ message: 'Product Added Successfully', data: product });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
-    fs.unlink(
-      path.join(process.cwd(), "public", "images", "thumbnails", thumbnail),
-      (error) => {
-        if (error) {
-          console.error("Error deleting file:", error);
-          return;
-        }
-        console.log("File deleted successfully");
+    fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', thumbnail), error => {
+      if (error) {
+        console.error('Error deleting file:', error);
+        return;
       }
-    );
+      console.log('File deleted successfully');
+    });
     next(error);
   }
 };
@@ -103,20 +95,20 @@ export const updateProduct = async (req, res, next) => {
     const product = await Product.findOne({ where: { id } });
 
     if (!product) {
-      throw new Error("Product not found");
+      throw new Error('Product not found');
     }
 
     if (req.files && req.files.file) {
-      fs.unlink(path.join(product.image), (error) => {
+      fs.unlink(path.join(product.image), error => {
         if (error) {
-          console.error("Error deleting file:", error);
+          console.error('Error deleting file:', error);
         } else {
-          console.log("Old file deleted successfully");
+          console.log('Old file deleted successfully');
         }
       });
 
       const thumbnail = req.files.file[0].filename;
-      product.image = "public/images/thumbnails/" + thumbnail;
+      product.image = 'public/images/thumbnails/' + thumbnail;
     }
 
     product.name = body.name || product.name;
@@ -127,31 +119,20 @@ export const updateProduct = async (req, res, next) => {
 
     await product.save();
 
-    res
-      .status(200)
-      .json({ message: "Product updated successfully", data: product });
+    res.status(200).json({ message: 'Product updated successfully', data: product });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
 
     // Jika terjadi kesalahan, hapus gambar yang mungkin sudah terunggah
     if (req.files && req.files.file) {
-      fs.unlink(
-        path.join(
-          process.cwd(),
-          "public",
-          "images",
-          "thumbnails",
-          req.files.file[0].filename
-        ),
-        (error) => {
-          if (error) {
-            console.error("Error deleting file:", error);
-          } else {
-            console.log("File deleted successfully");
-          }
+      fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', req.files.file[0].filename), error => {
+        if (error) {
+          console.error('Error deleting file:', error);
+        } else {
+          console.log('File deleted successfully');
         }
-      );
+      });
     }
 
     next(error);
@@ -165,31 +146,22 @@ export const deleteProduct = async (req, res, next) => {
     const productExist = await Product.findOne({ where: { id } });
 
     if (!productExist) {
-      throw new Error("Product not found");
+      throw new Error('Product not found');
     }
 
-    const thumbnailFilename = productExist.image.split("/").pop();
+    const thumbnailFilename = productExist.image.split('/').pop();
 
     await Product.destroy({ where: { id } });
 
-    fs.unlink(
-      path.join(
-        process.cwd(),
-        "public",
-        "images",
-        "thumbnails",
-        thumbnailFilename
-      ),
-      (error) => {
-        if (error) {
-          console.error("Error deleting file:", error);
-        } else {
-          console.log("File deleted successfully");
-        }
+    fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', thumbnailFilename), error => {
+      if (error) {
+        console.error('Error deleting file:', error);
+      } else {
+        console.log('File deleted successfully');
       }
-    );
+    });
 
-    res.status(200).json({ message: "Product deleted successfully" });
+    res.status(200).json({ message: 'Product deleted successfully' });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();

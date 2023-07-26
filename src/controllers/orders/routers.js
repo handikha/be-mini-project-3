@@ -1,29 +1,14 @@
-import { Router } from "express";
-import { createOrder, deleteOrder, getOrder, getOrders, updateOrder } from "./controller.js";
-import { verifyToken } from "../../middlewares/auth.js";
-import { createOrderSchema, validate } from "../../validators/order.js";
+import { Router } from 'express';
+import { getOrders, createOrder, deleteOrder, updateOrder, validate, payOrder, getOrderById } from './index.js';
+import { verifyUser } from '../../midlewares/index.js';
 
 const router = Router();
 
-router.get("/", verifyToken, getOrders);
-router.get("/:id", verifyToken, getOrder);
-router.post(
-  "/",
-  verifyToken,
-  async (req, res, next) => {
-    try {
-      await validate(createOrderSchema, req.body);
-      next();
-    } catch (err) {
-      res.status(err.status).json({
-        message: err.message,
-        errors: err.errors,
-      });
-    }
-  },
-  createOrder,
-);
-router.put("/:id", verifyToken, updateOrder);
-router.delete("/:id", verifyToken, deleteOrder);
+router.get('/order', verifyUser, getOrders);
+router.get('/order/:id', verifyUser, getOrderById);
+router.post('/order', verifyUser, ...validate('createOrder'), createOrder);
+router.put('/order/:id', verifyUser, updateOrder);
+router.delete('/order/:id', verifyUser, deleteOrder);
+router.patch('/order/:id', verifyUser, payOrder);
 
 export default router;

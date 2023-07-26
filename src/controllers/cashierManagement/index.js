@@ -1,19 +1,19 @@
-import User from "../../models/user.js";
-import * as helpers from "../../helpers/index.js";
-import * as Validation from "./validation.js";
-import * as config from "../../config/index.js";
-import { ValidationError } from "yup";
-import * as error from "../../midlewares/error.handler.js";
-import db from "../../models/index.js";
-import handlebars from "handlebars";
-import fs from "fs";
-import path from "path";
+import User from '../../models/user.js';
+import * as helpers from '../../helpers/index.js';
+import * as Validation from './validation.js';
+import * as config from '../../config/index.js';
+import { ValidationError } from 'yup';
+import * as error from '../../midlewares/error.handler.js';
+import db from '../../models/index.js';
+import handlebars from 'handlebars';
+import fs from 'fs';
+import path from 'path';
 
 //@register cashier controller
 export const register = async (req, res, next) => {
   //@Sequelize transaction
   const transaction = await db.sequelize.transaction();
-  const profileImg = req?.files?.["file"][0].filename;
+  const profileImg = req?.files?.['file'][0].filename;
   try {
     const { data } = req.body;
     const body = JSON.parse(data);
@@ -37,7 +37,7 @@ export const register = async (req, res, next) => {
       email: body.email,
       phone: body.phone,
       password: encryptedPassword,
-      profileImg: "public/images/profiles/" + profileImg,
+      profileImg: 'public/images/profiles/' + profileImg,
     });
 
     //@delete data password before sending response
@@ -50,10 +50,7 @@ export const register = async (req, res, next) => {
     });
 
     //@Send verification link via email
-    const template = fs.readFileSync(
-      path.join(process.cwd(), "templates", "registerCashier.html"),
-      "utf8"
-    );
+    const template = fs.readFileSync(path.join(process.cwd(), 'templates', 'registerCashier.html'), 'utf8');
     const message = handlebars.compile(template)({
       fullName: body.fullName,
       username: body.username,
@@ -64,7 +61,7 @@ export const register = async (req, res, next) => {
     const mailOptions = {
       from: config.GMAIL,
       to: body.email,
-      subject: "Welcome to Tokopaedi",
+      subject: 'Welcome to Tokopaedi',
       html: message,
     };
 
@@ -75,9 +72,9 @@ export const register = async (req, res, next) => {
 
     //@send response
     res
-      .header("Authorization", `Bearer ${accessToken}`)
+      .header('Authorization', `Bearer ${accessToken}`)
       .status(200)
-      .json({ message: "Register successful", data: cashier });
+      .json({ message: 'Register successful', data: cashier });
 
     // @commit transaction
     await transaction.commit();
@@ -106,22 +103,19 @@ export const changeStatusCashier = async (req, res, next) => {
 
     //@update status to 2 (inactive cashier)
     await User?.update({ status: status }, { where: { id: id } });
-    res.status(200).json({ message: "Cashier status changed" });
+    res.status(200).json({ message: 'Cashier status changed' });
 
     //@Send notification via email
-    let templateEmail = "";
-    let subject = "";
+    let templateEmail = '';
+    let subject = '';
     if (status == 1) {
-      templateEmail = "activationAccount.html";
-      subject = "Re-Activate Account";
+      templateEmail = 'activationAccount.html';
+      subject = 'Re-Activate Account';
     } else {
-      templateEmail = "deactivateAccount.html";
-      subject = "Deactivate Account";
+      templateEmail = 'deactivateAccount.html';
+      subject = 'Deactivate Account';
     }
-    const template = fs.readFileSync(
-      path.join(process.cwd(), "templates", templateEmail),
-      "utf8"
-    );
+    const template = fs.readFileSync(path.join(process.cwd(), 'templates', templateEmail), 'utf8');
     const message = handlebars.compile(template)({
       fullName: cashier?.dataValues?.fullName,
     });
@@ -149,7 +143,7 @@ export const changeStatusCashier = async (req, res, next) => {
 export const getCashierInfo = async (req, res, next) => {
   try {
     //@get query params
-    const { status = 1, sort = "ASC", page = 1 } = req.query;
+    const { sort = 'ASC', page = 1 } = req.query;
 
     //@pagination
     const pageSize = 9;
@@ -165,7 +159,7 @@ export const getCashierInfo = async (req, res, next) => {
     //@get cashier info
     const { count, rows: users } = await User.findAndCountAll({
       where: { role: 2 },
-      order: [["createdAt", sort]],
+      order: [['createdAt', sort]],
       offset,
       limit,
     });
@@ -198,13 +192,8 @@ export const updateProfile = async (req, res, next) => {
     const cashier = await User?.findOne({ where: { id: id } });
     if (!cashier) throw { status: 400, message: error.USER_DOES_NOT_EXISTS };
 
-    await User?.update(
-      { fullName: fullName, username: username, email: email, phone: phone },
-      { where: { id: id } }
-    );
-    res
-      .status(200)
-      .json({ message: "Profile change successfully", data: cashier });
+    await User?.update({ fullName: fullName, username: username, email: email, phone: phone }, { where: { id: id } });
+    res.status(200).json({ message: 'Profile change successfully', data: cashier });
 
     await transaction.commit();
   } catch (error) {

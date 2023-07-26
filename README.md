@@ -136,20 +136,19 @@ authentication/authorization.
 
 1. Install dependencies:
 
-    ```
-    npm install
-    ```
+   ```
+   npm install
+   ```
 
 2. Set environment variables:
 
    Copy the `.env.example` file, rename it to `.env`, and fill out the necessary environment variables.
 
-
 3. Run the application:
 
-    ```
-    npm start
-    ```
+   ```
+   npm start
+   ```
 
 ## Notes
 

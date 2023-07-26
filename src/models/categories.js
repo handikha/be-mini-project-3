@@ -1,6 +1,6 @@
-import db from "./index.js";
+import db from './index.js';
 
-const Category = db.sequelize.define("categories", {
+const Category = db.sequelize.define('categories', {
   id: {
     type: db.Sequelize.INTEGER,
     primaryKey: true,
