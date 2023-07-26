@@ -10,8 +10,8 @@ const router = Router();
 //@Authentication
 router.post('/auth/login', AuthControllers.login);
 router.get('/auth', AuthControllers.keepLogin);
-router.get('/auth/verify/', verifyUser, AuthControllers.verifyAccount);
-router.patch('/auth/change-default-password', verifyUser, AuthControllers.changePassword);
+router.patch('/auth/verify/', verifyUser, AuthControllers.verifyAccount);
+router.patch('/auth/change-password', verifyUser, AuthControllers.changePassword);
 router.put('/auth/forget-password', AuthControllers.forgetPassword);
 router.patch('/auth/reset-password', AuthControllers.ressetPassword);
 

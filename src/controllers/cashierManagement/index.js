@@ -55,7 +55,7 @@ export const register = async (req, res, next) => {
       fullName: body.fullName,
       username: body.username,
       defaultPassword,
-      link: config.REDIRECT_URL + `/auth/verify/${accessToken}`,
+      link: config.REDIRECT_URL + `/auth/change-password/${accessToken}`,
     });
 
     const mailOptions = {
