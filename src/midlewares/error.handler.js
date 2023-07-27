@@ -23,7 +23,7 @@ export const FORBIDDEN_STATUS = 403;
 export const NOT_FOUND_STATUS = 404;
 
 // @global error handler
-export function errorHandler(error, req, res) {
+export function errorHandler(error, req, res, next) {
   console.log(error.message || error);
 
   // @check if error from sequelize
