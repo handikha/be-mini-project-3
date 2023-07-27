@@ -55,7 +55,7 @@ export const register = async (req, res, next) => {
       fullName: body.fullName,
       username: body.username,
       defaultPassword,
-      link: config.REDIRECT_URL + `/auth/verify/${accessToken}`,
+      link: config.REDIRECT_URL + `/auth/change-password/${accessToken}`,
     });
 
     const mailOptions = {
@@ -146,7 +146,7 @@ export const getCashierInfo = async (req, res, next) => {
     const { sort = 'ASC', page = 1 } = req.query;
 
     //@pagination
-    const pageSize = 9;
+    const pageSize = 10;
     let offset = 0;
     let limit = pageSize;
     let currentPage = 1;

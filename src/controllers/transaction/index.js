@@ -41,7 +41,7 @@ export const createTransaction = async (req, res) => {
 
   const transaction = await db.sequelize.transaction();
   try {
-    const { userId, customerName, table, payAmount, orderItems } = req.body;
+    const { userId, customerName, table, orderItems } = req.body;
 
     let order = await Order.create(
       {
@@ -50,12 +50,11 @@ export const createTransaction = async (req, res) => {
         table: table,
         totalAmount: 0,
         isPaid: false,
-        payAmount: payAmount,
+        payAmount: 0,
         changeAmount: 0,
       },
       { transaction }
     );
-    await transaction.commit();
 
     const orderItemsWithOrderId = [];
     for (const orderItem of orderItems) {
