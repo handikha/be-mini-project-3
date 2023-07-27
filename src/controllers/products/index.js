@@ -1,4 +1,5 @@
 import Product from '../../models/products.js';
+import Category from '../../models/categories.js';
 import fs from 'fs';
 import path from 'path';
 import db from '../../models/index.js';
@@ -20,6 +21,10 @@ export const getAllProducts = async (req, res, next) => {
       order: [['name', sort ? sort : 'ASC']],
       ...options,
     });
+    for (const product of products) {
+      const category = await Category.findByPk(product.categoryId);
+      product.setDataValue('category', category);
+    }
     res.status(200).json({
       type: 'success',
       message: 'Products fetched',
