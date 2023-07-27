@@ -2,6 +2,7 @@ import Product from '../../models/products.js';
 import fs from 'fs';
 import path from 'path';
 import db from '../../models/index.js';
+import { Op } from 'sequelize';
 
 export const getAllProducts = async (req, res, next) => {
   try {
@@ -12,14 +13,18 @@ export const getAllProducts = async (req, res, next) => {
       limit: limit ? parseInt(limit) : 10,
     };
 
-    const total = category_id ? await Product?.count({ where: { categoryId: category_id } }) : await Product?.count();
+    const total = category_id
+      ? await Product?.count({ where: { categoryId: category_id, status: { [Op.not]: 2 } } })
+      : await Product?.count({ where: { status: { [Op.not]: 2 } } });
 
     const pages = Math.ceil(total / options.limit);
+
     const products = await Product.findAll({
-      where: category_id ? { categoryId: category_id } : {},
+      where: category_id ? { categoryId: category_id, status: { [Op.not]: 2 } } : { status: { [Op.not]: 2 } },
       order: [['name', sort ? sort : 'ASC']],
       ...options,
     });
+
     res.status(200).json({
       type: 'success',
       message: 'Products fetched',
@@ -115,7 +120,7 @@ export const updateProduct = async (req, res, next) => {
     product.price = body.price || product.price;
     product.description = body.description || product.description;
     product.categoryId = +body.categoryId || product.categoryId;
-    product.status = body.status || product.status;
+    product.status = body.status;
 
     await product.save();
 
@@ -151,7 +156,7 @@ export const deleteProduct = async (req, res, next) => {
 
     const thumbnailFilename = productExist.image.split('/').pop();
 
-    await Product.destroy({ where: { id } });
+    await productExist.update({ status: 2 });
 
     fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', thumbnailFilename), error => {
       if (error) {

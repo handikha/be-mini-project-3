@@ -1,9 +1,10 @@
 import Category from '../../models/categories.js';
 import * as error from '../../midlewares/error.handler.js';
+import { Op } from 'sequelize';
 
 export const getAllCategories = async (req, res, next) => {
   try {
-    const categories = await Category.findAll();
+    const categories = await Category.findAll({ where: { status: { [Op.not]: 2 } } });
     res.status(200).json(categories);
   } catch (error) {
     next(error);
@@ -66,7 +67,7 @@ export const deleteCategory = async (req, res, next) => {
       throw new Error('Category not found');
     }
 
-    await category.destroy({ where: { id: req.params.id } });
+    await category.update({ status: 2 });
 
     res.status(200).json({ message: 'Category deleted successfully' });
   } catch (error) {

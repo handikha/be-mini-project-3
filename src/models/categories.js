@@ -11,6 +11,11 @@ const Category = db.sequelize.define('categories', {
     type: db.Sequelize.STRING,
     allowNull: false,
   },
+  status: {
+    type: db.Sequelize.STRING,
+    allowNull: false,
+    defaultValue: 1,
+  },
   createdAt: {
     type: db.Sequelize.DATE,
     allowNull: false,
