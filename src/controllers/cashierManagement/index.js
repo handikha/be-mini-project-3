@@ -143,10 +143,10 @@ export const changeStatusCashier = async (req, res, next) => {
 export const getCashierInfo = async (req, res, next) => {
   try {
     //@get query params
-    const { sort = 'ASC', page = 1 } = req.query;
+    const { sort, page = 1, status } = req.query;
 
     //@pagination
-    const pageSize = 10;
+    const pageSize = 5;
     let offset = 0;
     let limit = pageSize;
     let currentPage = 1;
@@ -156,13 +156,26 @@ export const getCashierInfo = async (req, res, next) => {
       offset = (currentPage - 1) * pageSize;
     }
 
+    let queryOptions = {};
+    console.log('status : ' + status);
+
+    if (!status) {
+      queryOptions = {
+        where: { role: 2 },
+        order: [['fullName', sort]],
+        offset,
+        limit,
+      };
+    } else {
+      queryOptions = {
+        where: { role: 2, status: status },
+        order: [['fullName', sort]],
+        offset,
+        limit,
+      };
+    }
     //@get cashier info
-    const { count, rows: users } = await User.findAndCountAll({
-      where: { role: 2 },
-      order: [['createdAt', sort]],
-      offset,
-      limit,
-    });
+    const { count, rows: users } = await User.findAndCountAll(queryOptions);
 
     const totalPages = Math.ceil(count / pageSize);
 
