@@ -2,6 +2,8 @@ import Category from '../../models/categories.js';
 import * as error from '../../midlewares/error.handler.js';
 import { Op } from 'sequelize';
 import Product from '../../models/products.js';
+import { inputCategorySchema } from './validation.js';
+import { ValidationError } from 'yup';
 
 export const getAllCategories = async (req, res, next) => {
   try {
@@ -59,14 +61,20 @@ export const getCategoryById = async (req, res, next) => {
 export const createCategory = async (req, res, next) => {
   try {
     const { name } = req.body;
-    const categoryExist = await Category.findOne({ where: { name, status: { [Op.not]: 2 } } });
+
+    await inputCategorySchema.validate(req.body);
+
+    const categoryExist = await Category.findOne({ where: { name: name.trim(), status: { [Op.not]: 2 } } });
 
     if (categoryExist) throw { status: 400, message: error.CATEGORY_ALREADY_EXISTS };
 
-    const categories = await Category.create({ name });
+    const categories = await Category.create({ name: name.trim() });
 
     res.status(201).json({ message: 'Category created successfully', categories });
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return next({ status: 400, message: error?.errors?.[0] });
+    }
     next(error);
   }
 };
@@ -74,6 +82,9 @@ export const createCategory = async (req, res, next) => {
 export const updateCategory = async (req, res, next) => {
   try {
     const { name } = req.body;
+
+    await inputCategorySchema.validate(req.body);
+
     const category = await Category.findOne({ where: { id: req.params.id } });
 
     if (!category) {
@@ -81,14 +92,17 @@ export const updateCategory = async (req, res, next) => {
     }
 
     const categoryExist = await Category.findOne({
-      where: { name: name },
+      where: { name: name.trim() },
     });
 
     if (categoryExist) throw { status: 400, message: error.CATEGORY_ALREADY_EXISTS };
 
-    await category.update({ name });
+    await category.update({ name: name.trim() });
     res.status(200).json({ message: 'Category updated successfully', category });
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return next({ status: 400, message: error?.errors?.[0] });
+    }
     next(error);
   }
 };

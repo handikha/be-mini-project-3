@@ -4,8 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import db from '../../models/index.js';
 import { Op } from 'sequelize';
+import { inputProductValidationSchema, updateProductValidationSchema } from './validation.js';
+import { ValidationError } from 'yup';
 
-// TODO: SORT STATUS BY ROLE
 const getProductsByRoleAndStatus = async (role, status, category_id, keywords, options) => {
   let total;
   let products;
@@ -151,11 +152,20 @@ export const createProduct = async (req, res, next) => {
   try {
     const { data } = req.body;
     const body = JSON.parse(data);
-    console.log(data);
 
     if (req?.files?.['file'] && Array.isArray(req?.files?.['file'])) {
       thumbnail = req.files['file'][0]?.filename;
     }
+
+    const productData = {
+      name: body?.name,
+      price: +body?.price,
+      description: body?.description,
+      categoryId: +body?.categoryId,
+      image: thumbnail ? 'public/images/thumbnails/' + thumbnail : null,
+    };
+
+    await inputProductValidationSchema.validate(productData);
 
     const productExists = await Product.findOne({
       where: { name: body.name, status: { [Op.not]: 2 } },
@@ -165,20 +175,17 @@ export const createProduct = async (req, res, next) => {
       throw new Error('Product already exists');
     }
 
-    const product = await Product.create({
-      name: body?.name,
-      price: body?.price,
-      description: body?.description,
-      categoryId: +body?.categoryId,
-      image: thumbnail ? 'public/images/thumbnails/' + thumbnail : null,
-    });
+    const product = await Product.create(productData);
 
     res.status(200).json({ message: 'Product Added Successfully', data: product });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
 
-    // Hapus file thumbnail jika terjadi error
+    if (error instanceof ValidationError) {
+      return next({ status: 400, message: error?.errors?.[0] });
+    }
+
     if (thumbnail) {
       fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', thumbnail), err => {
         if (err) {
@@ -207,6 +214,14 @@ export const updateProduct = async (req, res, next) => {
       throw new Error('Product not found');
     }
 
+    const productExists = await Product.findOne({
+      where: { name: body.name, status: { [Op.not]: 2 } },
+    });
+
+    if (productExists) {
+      throw new Error('Product already exists');
+    }
+
     if (req.files && req.files.file) {
       const oldThumbnailPath = path.join(process.cwd(), 'public', 'images', 'thumbnails', product.image);
       fs.unlink(oldThumbnailPath, error => {
@@ -223,8 +238,17 @@ export const updateProduct = async (req, res, next) => {
       product.image = product.image;
     }
 
+    const productData = {
+      name: body?.name,
+      price: +body?.price,
+      description: body?.description,
+      categoryId: +body?.categoryId,
+    };
+
+    await updateProductValidationSchema.validate(productData);
+
     product.name = body.name || product.name;
-    product.price = body.price || product.price;
+    product.price = +body.price || product.price;
     product.description = body.description || product.description;
     product.categoryId = +body.categoryId || product.categoryId;
     product.status = body.status;
@@ -235,6 +259,9 @@ export const updateProduct = async (req, res, next) => {
     res.status(200).json({ message: 'Product updated successfully', data: product });
   } catch (error) {
     await transaction.rollback();
+    if (error instanceof ValidationError) {
+      return next({ status: 400, message: error?.errors?.[0] });
+    }
 
     if (req.files && req.files.file) {
       fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', req.files.file[0].filename), error => {
