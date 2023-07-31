@@ -5,31 +5,118 @@ import path from 'path';
 import db from '../../models/index.js';
 import { Op } from 'sequelize';
 
+// TODO: SORT STATUS BY ROLE
+const getProductsByRoleAndStatus = async (role, status, category_id, keywords, options) => {
+  let total;
+  let products;
+
+  if (role === 1) {
+    total = category_id
+      ? await Product?.count({ where: { categoryId: category_id, status: status } })
+      : await Product?.count({
+          where: {
+            name: {
+              [Op.like]: `%${keywords}%`,
+            },
+            status: status,
+          },
+        });
+
+    products = await Product.findAll({
+      where: category_id
+        ? {
+            categoryId: category_id,
+            name: {
+              [Op.like]: `%${keywords}%`,
+            },
+            status: { [Op.not]: status },
+          }
+        : keywords
+        ? {
+            name: {
+              [Op.like]: `%${keywords}%`,
+            },
+            status: { [Op.not]: status },
+          }
+        : { status: { [Op.not]: status } },
+      ...options,
+    });
+  } else if (role === 2) {
+    total = category_id
+      ? await Product?.count({ where: { categoryId: category_id, status: 1 } })
+      : await Product?.count({
+          where: {
+            name: {
+              [Op.like]: `%${keywords}%`,
+            },
+            status: 1,
+          },
+        });
+
+    products = await Product.findAll({
+      where: category_id
+        ? {
+            categoryId: category_id,
+            name: {
+              [Op.like]: `%${keywords}%`,
+            },
+            status: 1,
+          }
+        : keywords
+        ? {
+            name: {
+              [Op.like]: `%${keywords}%`,
+            },
+            status: 1,
+          }
+        : { status: 1 },
+      ...options,
+    });
+  }
+
+  return { total, products };
+};
+
 export const getAllProducts = async (req, res, next) => {
   try {
-    const { page, limit, category_id, sort } = req.query;
+    const { page, limit, category_id, sort_name, sort_price, keywords } = req.query;
+    const userRole = req.user.role;
 
     const options = {
       offset: page > 1 ? (page - 1) * limit : 0,
       limit: limit ? parseInt(limit) : 10,
     };
 
-    const total = category_id
-      ? await Product?.count({ where: { categoryId: category_id, status: { [Op.not]: 2 } } })
-      : await Product?.count({ where: { status: { [Op.not]: 2 } } });
+    let orderOptions = [];
 
-    const pages = Math.ceil(total / options.limit);
+    if (sort_name === 'ASC') {
+      orderOptions.push(['name', 'ASC']);
+    } else if (sort_name === 'DESC') {
+      orderOptions.push(['name', 'DESC']);
+    }
 
-    const products = await Product.findAll({
-      where: category_id ? { categoryId: category_id, status: { [Op.not]: 2 } } : { status: { [Op.not]: 2 } },
-      order: [['name', sort ? sort : 'ASC']],
+    if (sort_price === 'ASC') {
+      orderOptions.push(['price', 'ASC']);
+    } else if (sort_price === 'DESC') {
+      orderOptions.push(['price', 'DESC']);
+    }
+
+    if (orderOptions.length === 0) {
+      orderOptions.push(['name', 'ASC']);
+    }
+
+    const { total, products } = await getProductsByRoleAndStatus(userRole, 2, category_id, keywords, {
+      order: orderOptions,
       ...options,
     });
+
     for (const product of products) {
       const category = await Category.findByPk(product.categoryId);
       product.setDataValue('category', category);
     }
-    
+
+    const pages = Math.ceil(total / options.limit);
+
     res.status(200).json({
       type: 'success',
       message: 'Products fetched',
@@ -59,37 +146,49 @@ export const getProductById = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
-  const thumbnail = req?.files?.['file'][0]?.filename;
+  let thumbnail = null;
+
   try {
     const { data } = req.body;
     const body = JSON.parse(data);
     console.log(data);
-    const productExists = await Product?.findOne({
-      where: { name: body.name },
+
+    if (req?.files?.['file'] && Array.isArray(req?.files?.['file'])) {
+      thumbnail = req.files['file'][0]?.filename;
+    }
+
+    const productExists = await Product.findOne({
+      where: { name: body.name, status: { [Op.not]: 2 } },
     });
 
     if (productExists) {
       throw new Error('Product already exists');
     }
-    const product = await Product?.create({
+
+    const product = await Product.create({
       name: body?.name,
       price: body?.price,
       description: body?.description,
       categoryId: +body?.categoryId,
-      image: 'public/images/thumbnails/' + thumbnail,
+      image: thumbnail ? 'public/images/thumbnails/' + thumbnail : null,
     });
 
     res.status(200).json({ message: 'Product Added Successfully', data: product });
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
-    fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', thumbnail), error => {
-      if (error) {
-        console.error('Error deleting file:', error);
-        return;
-      }
-      console.log('File deleted successfully');
-    });
+
+    // Hapus file thumbnail jika terjadi error
+    if (thumbnail) {
+      fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', thumbnail), err => {
+        if (err) {
+          console.error('Error deleting file:', err);
+        } else {
+          console.log('File deleted successfully');
+        }
+      });
+    }
+
     next(error);
   }
 };
@@ -109,7 +208,8 @@ export const updateProduct = async (req, res, next) => {
     }
 
     if (req.files && req.files.file) {
-      fs.unlink(path.join(product.image), error => {
+      const oldThumbnailPath = path.join(process.cwd(), 'public', 'images', 'thumbnails', product.image);
+      fs.unlink(oldThumbnailPath, error => {
         if (error) {
           console.error('Error deleting file:', error);
         } else {
@@ -119,6 +219,8 @@ export const updateProduct = async (req, res, next) => {
 
       const thumbnail = req.files.file[0].filename;
       product.image = 'public/images/thumbnails/' + thumbnail;
+    } else {
+      product.image = product.image;
     }
 
     product.name = body.name || product.name;
@@ -129,12 +231,11 @@ export const updateProduct = async (req, res, next) => {
 
     await product.save();
 
-    res.status(200).json({ message: 'Product updated successfully', data: product });
     await transaction.commit();
+    res.status(200).json({ message: 'Product updated successfully', data: product });
   } catch (error) {
     await transaction.rollback();
 
-    // Jika terjadi kesalahan, hapus gambar yang mungkin sudah terunggah
     if (req.files && req.files.file) {
       fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', req.files.file[0].filename), error => {
         if (error) {

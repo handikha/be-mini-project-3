@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { verifyAdmin } from '../../midlewares/index.js';
+import { verifyAdmin, verifyUser } from '../../midlewares/index.js';
 import { createThumbnailUploader } from '../../helpers/uploader.js';
 import path from 'path';
 
@@ -10,7 +10,7 @@ const uploader = createThumbnailUploader(path.join(process.cwd(), 'public', 'ima
 const router = Router();
 
 router.post('/products', verifyAdmin, uploader.fields([{ name: 'data' }, { name: 'file' }]), products.createProduct);
-router.get('/products', products.getAllProducts);
+router.get('/products', verifyUser, products.getAllProducts);
 router.get('/products/:id', verifyAdmin, products.getProductById);
 router.patch(
   '/products/:id',
