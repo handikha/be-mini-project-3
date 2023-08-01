@@ -7,21 +7,23 @@ import { Op } from 'sequelize';
 import { inputProductValidationSchema, updateProductValidationSchema } from './validation.js';
 import { ValidationError } from 'yup';
 
-const getProductsByRoleAndStatus = async (role, status, category_id, keywords, options) => {
+const getProductsByRoleAndStatus = async (role, category_id, keywords, options) => {
   let total;
   let products;
 
   if (role === 1) {
     total = category_id
-      ? await Product?.count({ where: { categoryId: category_id, status: status } })
-      : await Product?.count({
+      ? await Product?.count({ where: { categoryId: category_id, status: { [Op.not]: 2 } } })
+      : keywords
+      ? await Product?.count({
           where: {
             name: {
               [Op.like]: `%${keywords}%`,
             },
-            status: status,
+            status: { [Op.not]: 2 },
           },
-        });
+        })
+      : await Product?.count();
 
     products = await Product.findAll({
       where: category_id
@@ -30,16 +32,16 @@ const getProductsByRoleAndStatus = async (role, status, category_id, keywords, o
             name: {
               [Op.like]: `%${keywords}%`,
             },
-            status: { [Op.not]: status },
+            status: { [Op.not]: 2 },
           }
         : keywords
         ? {
             name: {
               [Op.like]: `%${keywords}%`,
             },
-            status: { [Op.not]: status },
+            status: { [Op.not]: 2 },
           }
-        : { status: { [Op.not]: status } },
+        : { status: { [Op.not]: 2 } },
       ...options,
     });
   } else if (role === 2) {
@@ -106,7 +108,7 @@ export const getAllProducts = async (req, res, next) => {
       orderOptions.push(['name', 'ASC']);
     }
 
-    const { total, products } = await getProductsByRoleAndStatus(userRole, 2, category_id, keywords, {
+    const { total, products } = await getProductsByRoleAndStatus(userRole, category_id, keywords, {
       order: orderOptions,
       ...options,
     });
@@ -200,7 +202,7 @@ export const createProduct = async (req, res, next) => {
   }
 };
 
-export const updateProduct = async (req, res, next) => {
+export const updateProductData = async (req, res, next) => {
   const transaction = await db.sequelize.transaction();
 
   try {
@@ -209,16 +211,13 @@ export const updateProduct = async (req, res, next) => {
     const body = JSON.parse(data);
 
     const product = await Product.findOne({ where: { id } });
-
     if (!product) {
       throw new Error('Product not found');
     }
 
-    const productExists = await Product.findOne({
-      where: { name: body.name, status: { [Op.not]: 2 } },
-    });
+    const productExist = await Product.findAll({ where: { id: { [Op.not]: id }, name: body?.name ? body.name : '' } });
 
-    if (productExists) {
+    if (productExist.length > 0) {
       throw new Error('Product already exists');
     }
 
@@ -239,10 +238,10 @@ export const updateProduct = async (req, res, next) => {
     }
 
     const productData = {
-      name: body?.name,
-      price: +body?.price,
-      description: body?.description,
-      categoryId: +body?.categoryId,
+      name: body.name || product.name,
+      price: +body.price || product.price,
+      description: body.description || product.description,
+      categoryId: +body.categoryId || product.categoryId,
     };
 
     await updateProductValidationSchema.validate(productData);

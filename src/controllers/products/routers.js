@@ -16,7 +16,7 @@ router.patch(
   '/products/:id',
   verifyAdmin,
   uploader.fields([{ name: 'data' }, { name: 'file' }]),
-  products.updateProduct
+  products.updateProductData
 );
 router.delete('/products/:id', verifyAdmin, products.deleteProduct);
 
