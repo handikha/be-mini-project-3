@@ -7,23 +7,25 @@ import { Op } from 'sequelize';
 import { inputProductValidationSchema, updateProductValidationSchema } from './validation.js';
 import { ValidationError } from 'yup';
 
-const getProductsByRoleAndStatus = async (role, category_id, keywords, options) => {
+const getProductsByRoleAndStatus = async (role, status, category_id, keywords, options) => {
   let total;
   let products;
 
   if (role === 1) {
     total = category_id
-      ? await Product?.count({ where: { categoryId: category_id, status: { [Op.not]: 2 } } })
+      ? await Product?.count({ where: { categoryId: category_id, status: status ? status : { [Op.not]: 2 } } })
       : keywords
       ? await Product?.count({
           where: {
             name: {
               [Op.like]: `%${keywords}%`,
             },
-            status: { [Op.not]: 2 },
+            status: status ? status : { [Op.not]: 2 },
           },
         })
-      : await Product?.count();
+      : status
+      ? await Product?.count({ where: { status } })
+      : await Product.count();
 
     products = await Product.findAll({
       where: category_id
@@ -32,16 +34,16 @@ const getProductsByRoleAndStatus = async (role, category_id, keywords, options) 
             name: {
               [Op.like]: `%${keywords}%`,
             },
-            status: { [Op.not]: 2 },
+            status: status ? status : { [Op.not]: 2 },
           }
         : keywords
         ? {
             name: {
               [Op.like]: `%${keywords}%`,
             },
-            status: { [Op.not]: 2 },
+            status: status ? status : { [Op.not]: 2 },
           }
-        : { status: { [Op.not]: 2 } },
+        : { status: status ? status : { [Op.not]: 2 } },
       ...options,
     });
   } else if (role === 2) {
@@ -82,7 +84,7 @@ const getProductsByRoleAndStatus = async (role, category_id, keywords, options) 
 
 export const getAllProducts = async (req, res, next) => {
   try {
-    const { page, limit, category_id, sort_name, sort_price, keywords } = req.query;
+    const { page, limit, category_id, sort_name, sort_price, status, keywords } = req.query;
     const userRole = req.user.role;
 
     const options = {
@@ -108,7 +110,7 @@ export const getAllProducts = async (req, res, next) => {
       orderOptions.push(['name', 'ASC']);
     }
 
-    const { total, products } = await getProductsByRoleAndStatus(userRole, category_id, keywords, {
+    const { total, products } = await getProductsByRoleAndStatus(userRole, status, category_id, keywords, {
       order: orderOptions,
       ...options,
     });
@@ -124,7 +126,7 @@ export const getAllProducts = async (req, res, next) => {
       type: 'success',
       message: 'Products fetched',
       total_elements: total,
-      blog_per_page: +limit,
+      products_per_page: +limit,
       current_page: +page,
       next_page: page < pages ? parseInt(page) + 1 : null,
       total_pages: pages,
