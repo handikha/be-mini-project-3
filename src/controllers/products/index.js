@@ -160,13 +160,13 @@ export const createProduct = async (req, res, next) => {
     if (req?.files?.['file'] && Array.isArray(req?.files?.['file'])) {
       thumbnail = req.files['file'][0]?.filename;
     }
-
+    console.log(thumbnail);
     const productData = {
       name: body?.name,
       price: +body?.price,
       description: body?.description,
       categoryId: +body?.categoryId,
-      image: thumbnail ? 'public/images/thumbnails/' + thumbnail : null,
+      image: thumbnail ? thumbnail : null,
     };
 
     await inputProductValidationSchema.validate(productData);
@@ -234,7 +234,7 @@ export const updateProductData = async (req, res, next) => {
       });
 
       const thumbnail = req.files.file[0].filename;
-      product.image = 'public/images/thumbnails/' + thumbnail;
+      product.image = thumbnail;
     } else {
       product.image = product.image;
     }
