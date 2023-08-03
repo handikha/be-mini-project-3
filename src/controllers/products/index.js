@@ -288,11 +288,9 @@ export const deleteProduct = async (req, res, next) => {
       throw new Error('Product not found');
     }
 
-    const thumbnailFilename = productExist.image.split('/').pop();
-
     await productExist.update({ status: 2 });
 
-    fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', thumbnailFilename), error => {
+    fs.unlink(path.join(process.cwd(), 'public', 'images', 'thumbnails', productExist.image), error => {
       if (error) {
         console.error('Error deleting file:', error);
       } else {
