@@ -2,22 +2,23 @@ import User from '../../models/user.js';
 import db from '../../models/index.js';
 import fs from 'fs';
 import path from 'path';
+import * as error from "../../midlewares/error.handler.js";
 
 //@Upload user profile
-export const uploadImage = async (req, res, next) => {
+export const uploadImage = async (req, res) => {
   const transaction = await db.sequelize.transaction();
-  const imageUrl = 'public/images/profiles/' + req?.file?.filename;
+
+  const profileImg = req?.files?.['file'][0].filename;
+  const imageUrl = 'public/images/profiles/' + profileImg;
+
+  console.log('profileImg', profileImg);
   try {
-    // @check if image is uploaded
-    if (!req.file) {
-      throw new { status: 400, message: 'Please upload an image.' }();
-    }
-    const user = await User?.findOne({
-      where: { userId: req?.user.userId },
-    });
+    console.log("body", req.body)
+    const id = req.body.userId
+    const user = await User?.findOne({ where: { id: id } });
+    if (!user) throw { status: 400, message: error.USER_DOES_NOT_EXISTS };
 
     //@delete old user Profile if exist
-    console.log('Delete old');
     if (user.imgProfile) {
       fs.unlink(path.join(process.cwd(), user.imgProfile), error => {
         if (error) {
@@ -29,7 +30,7 @@ export const uploadImage = async (req, res, next) => {
     }
 
     // @update the user profile
-    await User?.update({ imgProfile: imageUrl }, { where: { userId: req.user.userId } });
+    await User?.update({ profileImg: imageUrl }, { where: { id: id } });
 
     // @send response
     res.status(200).json({
@@ -39,6 +40,7 @@ export const uploadImage = async (req, res, next) => {
     });
     await transaction.commit();
   } catch (error) {
+    console.log(error)
     await transaction.rollback();
     fs.unlink(path.join(process.cwd(), imageUrl), error => {
       if (error) {
@@ -46,7 +48,6 @@ export const uploadImage = async (req, res, next) => {
       }
       console.log('New Image deleted');
     });
-    next(error);
   }
 };
 
