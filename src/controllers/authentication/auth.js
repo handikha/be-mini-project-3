@@ -12,7 +12,7 @@ import path from 'path';
 //@verify account constroller
 export const verifyAccount = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.headers.authorization?.split(' ')[1];
     const decodedToken = helpers.verifyToken(token);
     //@update isVerified field to 1
     await User?.update({ status: 1 }, { where: { id: decodedToken?.id } });

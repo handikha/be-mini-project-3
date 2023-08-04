@@ -3,6 +3,8 @@ import db from '../../models/index.js';
 import Order from '../../models/orders.js';
 import OrderItem from '../../models/orderItems.js';
 import Product from '../../models/products.js';
+import User from '../../models/user.js';
+import { Op } from 'sequelize';
 
 export const validate = method => {
   switch (method) {
@@ -210,4 +212,46 @@ export const payTransaction = async (req, res) => {
     await transaction.rollback();
     res.status(500).json({ message: error.message });
   }
+};
+
+export const getTransactionsForAdmin = async (req, res) => {
+  const { page, limit } = req.query;
+
+  const options = {
+    offset: page > 1 ? (page - 1) * +limit : 0,
+    limit: limit ? +limit : 10,
+  };
+  const total = await Order?.count();
+  const pages = Math.ceil(total / +limit);
+
+  let transactions = await Order.findAll({
+    ...options,
+  });
+
+  let result = [];
+
+  for (const transaction of transactions) {
+    const user = await User.findByPk(transaction.userId);
+    const cashierName = user.dataValues.fullName;
+
+    result.push({
+      id: transaction.id,
+      cashierName: cashierName,
+      customerName: transaction.customerName,
+      tableNumber: transaction.table,
+      totalAmount: transaction.totalAmount,
+      transactionDate: transaction.createdAt,
+    });
+  }
+
+  res.status(200).json({
+    type: 'success',
+    message: 'Transactions fetched',
+    total_elements: total,
+    transactions_per_page: +limit,
+    current_page: +page,
+    next_page: page < pages ? +page + 1 : null,
+    total_pages: pages,
+    data: result,
+  });
 };
